@@ -6,7 +6,7 @@ from reportlab.lib.utils import ImageReader
 from typing import Optional
 from io import BytesIO
 import os
-import sys  # ✅ Added to check Python version
+import sys
 
 app = FastAPI(
     title="GCCI Certificate Generator",
@@ -37,7 +37,6 @@ class CertificateOfOriginData(BaseModel):
 def root():
     return {"message": "GCCI Certificate Generator is live. Use POST /generate-origin-certificate-pdf/"}
 
-# ✅ Added this route to check Python version on Render
 @app.get("/python-version")
 def get_python_version():
     return {"python_version": sys.version}
@@ -49,15 +48,15 @@ def generate_certificate(data: CertificateOfOriginData):
         c = canvas.Canvas(buffer, pagesize=A4)
         width, height = A4
 
-        # Background image
-        bg_path = r"C:\Users\Lenovo\OneDrive\Desktop\certificate GCCI\bggcci.jpg"
+        # ✅ Background image (relative path)
+        bg_path = os.path.join(os.path.dirname(__file__), "static", "bggcci.jpg")
         if os.path.exists(bg_path):
             c.drawImage(ImageReader(bg_path), 0, 0, width=width, height=height)
         else:
             c.setFont("Helvetica-Bold", 10)
-            c.drawString(100, 800, "⚠️ Missing background image: bggcci.jpg")
+            c.drawString(100, 800, "⚠️ Missing background image: static/bggcci.jpg")
 
-        # Helper functions
+        # === Helper functions ===
         def draw_heading(text, x, y):
             c.setFont("Helvetica-Bold", 9)
             c.drawString(x, y, text)
@@ -67,7 +66,7 @@ def generate_certificate(data: CertificateOfOriginData):
             for i, line in enumerate(text.splitlines()):
                 c.drawString(x, y_start - i * line_height, line)
 
-        # Header Fields
+        # === Header Fields ===
         draw_multiline("1. Goods consigned from\n(Exporter's name, address, country)", 30, 740)
         draw_multiline(data.exporter_name_address, 30, 720)
 
@@ -84,7 +83,7 @@ def generate_certificate(data: CertificateOfOriginData):
         draw_heading("4. For official use", 300, 480)
         draw_multiline(data.official_use, 300, 470)
 
-        # Description Table Section
+        # === Description Table Section ===
         draw_multiline("5. Item number", 30, 385)
         draw_multiline("6. Marks and numbers\nof packages", 125, 385)
         draw_multiline("7. Number and kind \nof packages,\ndescription of goods", 210, 385)
@@ -104,14 +103,14 @@ def generate_certificate(data: CertificateOfOriginData):
         c.setFont("Helvetica", 8)
         c.drawString(270, 320, data.hs_code)
 
-        # Certification Section
+        # === Certification Section ===
         draw_heading("11. Certification", 30, 150)
         draw_multiline(
             "It is hereby certified, on the basis of control carried out,\n"
             "that the declaration by the exporter is correct.", 30, 135)
         draw_multiline(data.certificate_place_date, 30, 100)
 
-        # Exporter Declaration Section
+        # === Exporter Declaration Section ===
         draw_heading("12. Declaration by the exporter", 300, 150)
         c.setFont("Helvetica", 8)
         c.drawString(300, 70, f"...exports to: {data.importing_country}")
