@@ -1,10 +1,8 @@
+build:
+  environment:
+    PYTHON_VERSION: 3.11.9  # Force specific version
+    PIP_VERSION: 23.3.2      # Match your local environment
 services:
   - type: web
-    name: gcciform144a
-    env: python
-    buildCommand: |
-      echo "python-3.10.12" > runtime.txt
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
-    plan: free
+    name: GCCI
+    runtime: python          # Explicitly specify runtime
